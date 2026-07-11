@@ -1,0 +1,17 @@
+# TODO: 팀에서 노드별 파라미터를 합의한 뒤 아래 영역에 추가한다.
+
+# gesture_node:
+#   ros__parameters:
+#     TODO: MediaPipe 검출 설정을 정의한다.
+
+# object_tracking_node:
+#   ros__parameters:
+#     TODO: 카메라와 HSV 색상 추적 설정을 정의한다.
+
+# controller_node:
+#   ros__parameters:
+#     TODO: 목표 거리와 속도 제어 설정을 정의한다.
+
+# simulation_node:
+#   ros__parameters:
+#     TODO: turtlesim 또는 Gazebo 설정을 정의한다.
