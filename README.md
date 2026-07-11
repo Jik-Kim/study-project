@@ -12,6 +12,7 @@ MediaPipe와 OpenCV로 제스처 및 색상 객체를 인식하고, ROS2 Python 
 ## 기준 문서
 
 - [프로젝트 SOT](docs/SOT.md)
+- [영역별 책임](docs/responsibilities.md)
 - [아키텍처](docs/architecture.md)
 - [인터페이스](docs/interfaces.md)
 - [개발 환경](docs/setup.md)

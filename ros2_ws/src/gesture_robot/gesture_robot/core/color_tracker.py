@@ -9,4 +9,4 @@ class ColorTracker:
     def track(self, frame: Any) -> Any:
         """객체의 검출 여부, 중심 오차, 면적을 반환한다."""
         # TODO: HSV 변환, 마스크 생성, 노이즈 제거, 윤곽선 검출을 구현한다.
-        raise NotImplementedError
+        pass

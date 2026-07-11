@@ -9,4 +9,4 @@ class MediaPipeDetector:
     def detect(self, frame: Any) -> Any:
         """검출한 손 랜드마크를 반환한다."""
         # TODO: MediaPipe 초기화와 손 랜드마크 검출을 구현한다.
-        raise NotImplementedError
+        pass

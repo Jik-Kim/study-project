@@ -9,4 +9,4 @@ class GestureClassifier:
     def classify(self, hand_landmarks: Any) -> Any:
         """인식된 손 모양에 대응하는 명령을 반환한다."""
         # TODO: 손 펴기, 주먹, 방향 제스처의 판별 규칙을 구현한다.
-        raise NotImplementedError
+        pass
