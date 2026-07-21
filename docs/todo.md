@@ -94,6 +94,19 @@
 - [ ] `SimulationNode.__init__()`: 속도 Subscriber 구성
 - [ ] `SimulationNode.handle_velocity_command()`: 이동 명령 전달
 
+## UI
+
+### `gesture_robot/ui/main_ui.py`
+
+- [x] `MainUI._build_ui()`: Tkinter 창 및 레이아웃 구성
+- [x] `MainUI._build_camera()`: 카메라 영역 배치
+- [x] `MainUI._build_status()`: 상태 표시 영역 배치
+- [x] `MainUI._build_simulation()`: 시뮬레이션 영역 배치
+- [x] `MainUI._tick()`: 모의 데이터로 UI 갱신
+- [ ] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
+- [ ] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
+- [ ] `main()`: setup.py console_scripts 등록
+
 ## 실행 설정
 
 ### `gesture_robot/config/params.yaml`
