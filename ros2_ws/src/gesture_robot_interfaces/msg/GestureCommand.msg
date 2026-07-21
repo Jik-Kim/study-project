@@ -1,6 +1,7 @@
 # 제스처 인식 결과로 전달할 명령이다.
-# TODO: 팀 합의 후 허용할 command 값 또는 상수 목록을 확정한다.
 
-std_msgs/Header header
-string command
+uint8 NONE=0
+uint8 START=1
+uint8 STOP=2
+uint8 command
 float32 confidence

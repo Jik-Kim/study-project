@@ -24,7 +24,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            # TODO: 각 ROS2 노드의 main 함수 구현 후 실행 항목을 등록한다.
+            "controller_node = gesture_robot.nodes.controller_node:main",
         ],
     },
 )

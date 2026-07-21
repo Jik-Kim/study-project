@@ -1,7 +1,6 @@
 # 색상 객체 추적 결과다.
-# TODO: 제어에 필요한 필드를 검증한 뒤 추가 또는 정리한다.
+# 단위: error_x, error_y는 픽셀, area는 픽셀^2
 
-std_msgs/Header header
 bool detected
 float32 error_x
 float32 error_y
