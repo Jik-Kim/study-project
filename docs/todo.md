@@ -108,9 +108,13 @@
 - [x] `MainUI._build_camera()`: 카메라 영역 배치
 - [x] `MainUI._build_status()`: 상태 표시 영역 배치
 - [x] `MainUI._build_simulation()`: 시뮬레이션 영역 배치
-- [x] `MainUI._tick()`: 모의 데이터로 UI 갱신
+- [x] `MainUI._build_topic_flow()`: SOT 확정 4개 토픽 흐름 영역 배치
+- [x] `MainUI._build_velocity()`: 속도값 실시간 그래프 영역 배치
+- [x] `MainUI._tick()`: 모의 데이터로 UI 갱신 (상태·토픽 흐름·속도 그래프 포함)
 - [ ] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
 - [ ] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
+- [ ] `MainUI.update_topic_activity()`: 실제 노드 Publish 시점과 연동
+- [ ] `MainUI.update_velocity()`: `controller_node`가 발행한 실제 `Twist` 값으로 갱신
 - [ ] `main()`: setup.py console_scripts 등록
 
 ## 실행 설정

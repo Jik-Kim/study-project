@@ -1,24 +1,37 @@
 """Tkinter 기반 메인 UI 영역."""
 
-import tkinter as tk
-from tkinter import ttk
+from collections import deque
 from typing import Optional
 
 import cv2
 import numpy as np
+import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 
 
 class MainUI:
     _TITLE = "Gesture-Controlled Tracking Robot"
-    _WIDTH = 860
-    _HEIGHT = 680
+    _WIDTH = 1300
+    _HEIGHT = 700
     _CAM_W = 640
     _CAM_H = 360
     _SIM_H = 200
+    _SIDE_W = 480
+    _FLOW_H = 220
+    _VEL_H = 220
+    _VEL_MAXLEN = 100
     _TICK_MS = 50
 
     _GESTURE_NAMES = {0: "NONE", 1: "START", 2: "STOP"}
+
+    # SOT 확정 토픽 계약 (docs/SOT.md, 3주차 회의록 참고)
+    _TOPICS = [
+        "/camera/image_raw",
+        "/gesture/command",
+        "/tracking/object",
+        "/turtle1/cmd_vel",
+    ]
 
     def __init__(self) -> None:
         self.root = tk.Tk()
@@ -28,6 +41,8 @@ class MainUI:
 
         self._cam_photo: Optional[ImageTk.PhotoImage] = None
         self._sim_photo: Optional[ImageTk.PhotoImage] = None
+        self._linear_history: deque[float] = deque(maxlen=self._VEL_MAXLEN)
+        self._angular_history: deque[float] = deque(maxlen=self._VEL_MAXLEN)
 
         self._build_ui()
         self._mock_start()
@@ -35,12 +50,19 @@ class MainUI:
     # --- Build UI ---
 
     def _build_ui(self) -> None:
-        self._build_camera()
-        self._build_status()
-        self._build_simulation()
+        left = ttk.Frame(self.root)
+        left.pack(side="left", fill="both", expand=True)
+        right = ttk.Frame(self.root)
+        right.pack(side="left", fill="both", expand=True)
 
-    def _build_camera(self) -> None:
-        frame = ttk.LabelFrame(self.root, text="CAMERA", padding=5)
+        self._build_camera(left)
+        self._build_status(left)
+        self._build_simulation(left)
+        self._build_topic_flow(right)
+        self._build_velocity(right)
+
+    def _build_camera(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="CAMERA", padding=5)
         frame.pack(fill="both", expand=True, padx=10, pady=(10, 5))
 
         self._cam_canvas = tk.Canvas(
@@ -53,8 +75,8 @@ class MainUI:
             text="CAMERA FEED", fill="#444", font=("Arial", 18),
         )
 
-    def _build_status(self) -> None:
-        frame = ttk.LabelFrame(self.root, text="STATUS", padding=10)
+    def _build_status(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="STATUS", padding=10)
         frame.pack(fill="x", padx=10, pady=5)
 
         self._svars: dict[str, tk.StringVar] = {}
@@ -77,8 +99,8 @@ class MainUI:
                 row=0, column=col * 2 + 1, sticky="w", padx=(0, 10),
             )
 
-    def _build_simulation(self) -> None:
-        frame = ttk.LabelFrame(self.root, text="SIMULATION", padding=5)
+    def _build_simulation(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="SIMULATION", padding=5)
         frame.pack(fill="x", padx=10, pady=(5, 10))
 
         self._sim_canvas = tk.Canvas(
@@ -89,6 +111,50 @@ class MainUI:
         self._sim_canvas.create_text(
             self._CAM_W // 2, self._SIM_H // 2,
             text="TURTLESIM", fill="#ccc", font=("Arial", 20),
+        )
+
+    def _build_topic_flow(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="TOPIC FLOW", padding=5)
+        frame.pack(fill="x", padx=10, pady=(10, 5))
+
+        self._flow_canvas = tk.Canvas(
+            frame, width=self._SIDE_W, height=self._FLOW_H,
+            bg="#fafafa", highlightthickness=0,
+        )
+        self._flow_canvas.pack()
+
+        row_h = self._FLOW_H / len(self._TOPICS)
+        self._flow_dots: list[int] = []
+        for i, topic in enumerate(self._TOPICS):
+            y = row_h * i + row_h / 2
+            dot = self._flow_canvas.create_oval(
+                20, y - 8, 36, y + 8, fill="#ccc", outline="",
+            )
+            self._flow_canvas.create_text(
+                50, y, text=topic, anchor="w", font=("Consolas", 11),
+            )
+            self._flow_dots.append(dot)
+
+    def _build_velocity(self, parent: tk.Widget) -> None:
+        frame = ttk.LabelFrame(parent, text="VELOCITY", padding=5)
+        frame.pack(fill="x", padx=10, pady=(5, 10))
+
+        self._vel_canvas = tk.Canvas(
+            frame, width=self._SIDE_W, height=self._VEL_H,
+            bg="#ffffff", highlightthickness=0,
+        )
+        self._vel_canvas.pack()
+        mid_y = self._VEL_H // 2
+        self._vel_canvas.create_line(
+            0, mid_y, self._SIDE_W, mid_y, fill="#ddd",
+        )
+        self._vel_canvas.create_text(
+            10, 10, anchor="nw", fill="#3a7", font=("Arial", 9),
+            text="linear_x",
+        )
+        self._vel_canvas.create_text(
+            10, 26, anchor="nw", fill="#c33", font=("Arial", 9),
+            text="angular_z",
         )
 
     # --- Public API (2단계에서 ROS2 Subscribe 시 호출) ---
@@ -126,6 +192,39 @@ class MainUI:
         self._svars["area"].set(f"{area:.0f}")
         self._svars["fps"].set(f"{fps:.1f}")
 
+    def update_topic_activity(self, active_topic: str) -> None:
+        """직전에 메시지가 발행된 토픽의 표시등을 강조한다."""
+        for topic, dot in zip(self._TOPICS, self._flow_dots):
+            color = "#3a7" if topic == active_topic else "#ccc"
+            self._flow_canvas.itemconfig(dot, fill=color)
+
+    def update_velocity(self, linear_x: float, angular_z: float) -> None:
+        """최신 속도 명령을 VELOCITY 그래프에 추가한다."""
+        self._linear_history.append(linear_x)
+        self._angular_history.append(angular_z)
+        self._redraw_velocity()
+
+    def _redraw_velocity(self) -> None:
+        canvas = self._vel_canvas
+        canvas.delete("series")
+        mid_y = self._VEL_H // 2
+        step = self._SIDE_W / self._VEL_MAXLEN
+        scale = 80.0
+
+        for history, color in (
+            (self._linear_history, "#3a7"),
+            (self._angular_history, "#c33"),
+        ):
+            if len(history) < 2:
+                continue
+            points = []
+            start_x = self._SIDE_W - len(history) * step
+            for i, value in enumerate(history):
+                x = start_x + i * step
+                y = mid_y - value * scale
+                points.extend((x, y))
+            canvas.create_line(*points, fill=color, width=2, tags="series")
+
     # --- Standalone mock (이번 주 테스트용, 2단계에서 제거) ---
 
     def _mock_start(self) -> None:
@@ -150,7 +249,24 @@ class MainUI:
             )
 
         self.update_status(tracking, gesture, conf, ex, ey, area, fps)
+        self._mock_tick_topic_flow(t)
+        self._mock_tick_velocity(tracking, ex, area)
         self.root.after(self._TICK_MS, self._tick)
+
+    def _mock_tick_topic_flow(self, t: int) -> None:
+        """토픽 흐름을 데이터 순서(카메라→인식/추적→제어→시뮬레이터)로 순환 표시한다."""
+        active_index = (t // 5) % len(self._TOPICS)
+        self.update_topic_activity(self._TOPICS[active_index])
+
+    def _mock_tick_velocity(self, tracking: str, error_x: float, area: float) -> None:
+        """3주차 회의록에서 확정한 제어식으로 모의 속도값을 계산한다."""
+        if tracking == "STOP":
+            linear_x, angular_z = 0.0, 0.0
+        else:
+            target_area, linear_gain, angular_gain = 1500.0, 0.003, 0.01
+            linear_x = linear_gain * (target_area - area)
+            angular_z = -angular_gain * error_x
+        self.update_velocity(linear_x, angular_z)
 
     # --- Run ---
 
