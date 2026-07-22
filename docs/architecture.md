@@ -17,15 +17,30 @@ sim_bringup (turtlesim 실행·통합 launch)
 ## 데이터 흐름
 
 ```text
-camera_node ── 공유 프레임 ─┬─ gesture_node ── GestureCommand ─┐
-                           └─ object_tracking_node          │
-                                  └─ TrackedObject ─────────┘
-                                                               ▼
-                                                        controller_node
-                                                               │ Twist
-                                                               ▼
-                                                          turtlesim
+camera_node ── /camera/image_raw ─┬─ gesture_node
+                                 │       └─ /gesture/command ─┐
+                                 └─ object_tracking_node      │
+                                      └─ /tracking/object ────┤
+                                                              ▼
+                                                       controller_node
+                                                              │
+                                                     /turtle1/cmd_vel
+                                                              ▼
+                                                         turtlesim
 ```
+
+거북이에 전방 카메라가 장착된 것으로 가정한다. 제어 노드는 다음 입력 관계로
+turtlesim의 속도를 계산한다.
+
+```text
+error_x ───────────────→ angular.z
+target_area - area ────→ linear.x
+error_y ───────────────→ 시각화·향후 확장
+GestureCommand ────────→ 추적 START/STOP 상태
+```
+
+객체가 미검출되면 속도 0을 발행하되 추적 상태는 유지한다. 객체가 다시 검출되었을
+때 기존 상태가 START이면 이동을 재개한다.
 
 ## 애플리케이션 내부 구조
 
@@ -42,4 +57,3 @@ nodes ──→ core
 - `visualization`: OpenCV 화면 출력
 
 현재 노드 파일에는 호출 순서만 있으며 실제 Publisher, Subscriber, `main()`은 TODO다.
-구체적인 토픽 이름은 회의 후 이 문서와 `docs/interfaces.md`에 함께 반영한다.
