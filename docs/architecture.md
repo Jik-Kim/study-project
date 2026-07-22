@@ -7,6 +7,8 @@ gesture_robot_interfaces
         │ rosidl이 생성한 Python 메시지
         ▼
 gesture_robot (rclpy)
+
+sim_bringup (turtlesim 실행·통합 launch)
 ```
 
 `gesture_robot_interfaces`를 먼저 빌드하면 rosidl이 Python과 C++ 메시지 코드를
@@ -15,9 +17,14 @@ gesture_robot (rclpy)
 ## 데이터 흐름
 
 ```text
-gesture_node ── GestureCommand ─────────┐
-                                       ▼
-object_tracking_node ─ TrackedObject ─ controller_node ─ 속도 명령 ─ simulation_node
+camera_node ── 공유 프레임 ─┬─ gesture_node ── GestureCommand ─┐
+                           └─ object_tracking_node          │
+                                  └─ TrackedObject ─────────┘
+                                                               ▼
+                                                        controller_node
+                                                               │ Twist
+                                                               ▼
+                                                          turtlesim
 ```
 
 ## 애플리케이션 내부 구조
@@ -35,3 +42,4 @@ nodes ──→ core
 - `visualization`: OpenCV 화면 출력
 
 현재 노드 파일에는 호출 순서만 있으며 실제 Publisher, Subscriber, `main()`은 TODO다.
+구체적인 토픽 이름은 회의 후 이 문서와 `docs/interfaces.md`에 함께 반영한다.
