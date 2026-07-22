@@ -6,7 +6,7 @@ MediaPipe와 OpenCV로 제스처 및 색상 객체를 인식하고, ROS2 Python 
 ## 프로젝트 정보
 
 - 기간: 2026-07-10 ~ 2026-08-05
-- 팀원: 김병직, 김도윤, 황인재, 조정묵
+- 팀원: 김병직, 김도윤, 황인재, 조정묵, 이시율
 - 기술 방향: Python 3.12, ROS2 Jazzy, rclpy, rosidl, OpenCV, MediaPipe
 
 ## 기준 문서
@@ -23,13 +23,14 @@ MediaPipe와 OpenCV로 제스처 및 색상 객체를 인식하고, ROS2 Python 
 ```text
 ros2_ws/src/
 ├── gesture_robot_interfaces/  # ament_cmake + rosidl 메시지 계약
-└── gesture_robot/             # ament_python + rclpy 애플리케이션
-    ├── gesture_robot/
-    ├── config/
-    ├── launch/
-    ├── setup.py
-    ├── setup.cfg
-    └── package.xml
+├── gesture_robot/             # ament_python + rclpy 애플리케이션
+│   ├── gesture_robot/
+│   ├── config/
+│   ├── launch/
+│   ├── setup.py
+│   ├── setup.cfg
+│   └── package.xml
+└── sim_bringup/               # turtlesim 및 통합 launch
 ```
 
 ## 빌드
