@@ -25,7 +25,7 @@ class GestureNode(Node):
             reliability= ReliabilityPolicy.RELIABLE,
         )
         self._publisher = self.create_publisher(
-            GestureCommandMsg, "gesture_command", qos
+            GestureCommandMsg, "gesture/command", qos
         )
         self._timer = self.create_timer(0.1, self.process_frame)
 

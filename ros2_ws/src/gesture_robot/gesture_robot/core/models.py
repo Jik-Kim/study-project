@@ -1,12 +1,11 @@
 """노드 내부에서 사용할 Python 데이터 모델 정의 영역."""
 
-# TODO: rosidl 메시지 필드 확정 후 내부 데이터 모델과 변환 규칙을 정의한다.
 from enum import Enum
 
-class GestureCommand(str, Enum):
-    START = "START"
-    STOP = "STOP"
-    NONE = "NONE"
+class GestureCommand(Enum):
+    NONE = 0
+    START = 1
+    STOP = 2
 
 class GestureResult:
     def __init__(self, command: GestureCommand, confidence: float):
