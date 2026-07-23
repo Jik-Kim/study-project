@@ -22,20 +22,23 @@ team_proj/
         │   │   └── TrackedObject.msg
         │   ├── CMakeLists.txt
         │   └── package.xml
-        └── gesture_robot/
-            ├── gesture_robot/
-            │   ├── nodes/
-            │   ├── core/
-            │   ├── adapters/
-            │   └── visualization/
-            ├── config/
-            │   └── params.yaml
-            ├── launch/
-            │   └── gesture_robot.launch.py
-            ├── resource/
-            ├── package.xml
-            ├── setup.py
-            └── setup.cfg
+        ├── gesture_robot/
+        │   ├── gesture_robot/
+        │   │   ├── nodes/
+        │   │   ├── core/
+        │   │   ├── adapters/
+        │   │   └── visualization/
+        │   ├── config/
+        │   │   └── params.yaml
+        │   ├── launch/
+        │   │   └── gesture_robot.launch.py
+        │   ├── resource/
+        │   ├── package.xml
+        │   ├── setup.py
+        │   └── setup.cfg
+        └── sim_bringup/
+            ├── CMakeLists.txt
+            └── package.xml
 ```
 
 ## `gesture_robot_interfaces` 패키지
@@ -93,6 +96,11 @@ Python 모듈과 실행 파일을 ROS2 패키지로 설치하고 검색할 수 �
 ### `package.xml`
 
 애플리케이션 패키지 정보와 `rclpy`, 인터페이스 패키지 등의 의존성을 선언한다.
+
+## `sim_bringup` 패키지
+
+turtlesim 실행과 전체 통합에 필요한 launch 파일을 관리한다. Gazebo 확장은
+통합 테스트 후 선택하며, 선택 전에는 Gazebo 의존성을 추가하지 않는다.
 
 ## 패키지 연결 관계
 

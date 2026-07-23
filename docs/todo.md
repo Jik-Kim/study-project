@@ -6,16 +6,22 @@
 
 ### `gesture_robot_interfaces/msg/GestureCommand.msg`
 
-- [ ] 제스처 명령 종류와 필드 확정
+- [x] 제스처 명령 종류와 필드 확정
 
 ### `gesture_robot_interfaces/msg/TrackedObject.msg`
 
-- [ ] 위치 오차와 면적의 단위 확정
-- [ ] 객체 미검출 표현 방식 확정
+- [x] 위치 오차와 면적의 단위 확정
+- [x] 객체 미검출 표현 방식 확정
+- [x] 위치 오차의 부호 규칙 확정
 
 ### `gesture_robot_interfaces/CMakeLists.txt`
 
-- [ ] 최종 rosidl 메시지 생성 목록 반영
+- [x] 현재 MVP rosidl 메시지 생성 목록 반영
+
+## ROS2 통신 계약
+
+- [x] 노드별 토픽 이름 합의 및 문서화
+- [x] 카메라·제어 명령 외 토픽의 QoS 합의
 
 ## 내부 모델
 
@@ -75,6 +81,7 @@
 ### `gesture_robot/core/tracking_controller.py`
 
 - [ ] `TrackingController.calculate()`: 정지·전진·회전 명령 계산
+- [ ] 실제 카메라와 turtlesim 통합 테스트 후 이동 제어 파라미터 초깃값 확정
 
 ### `gesture_robot/nodes/controller_node.py`
 

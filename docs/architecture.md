@@ -7,6 +7,8 @@ gesture_robot_interfaces
         │ rosidl이 생성한 Python 메시지
         ▼
 gesture_robot (rclpy)
+
+sim_bringup (turtlesim 실행·통합 launch)
 ```
 
 `gesture_robot_interfaces`를 먼저 빌드하면 rosidl이 Python과 C++ 메시지 코드를
@@ -15,10 +17,30 @@ gesture_robot (rclpy)
 ## 데이터 흐름
 
 ```text
-gesture_node ── GestureCommand ─────────┐
-                                       ▼
-object_tracking_node ─ TrackedObject ─ controller_node ─ 속도 명령 ─ simulation_node
+camera_node ── /camera/image_raw ─┬─ gesture_node
+                                 │       └─ /gesture/command ─┐
+                                 └─ object_tracking_node      │
+                                      └─ /tracking/object ────┤
+                                                              ▼
+                                                       controller_node
+                                                              │
+                                                     /turtle1/cmd_vel
+                                                              ▼
+                                                         turtlesim
 ```
+
+거북이에 전방 카메라가 장착된 것으로 가정한다. 제어 노드는 다음 입력 관계로
+turtlesim의 속도를 계산한다.
+
+```text
+error_x ───────────────→ angular.z
+target_area - area ────→ linear.x
+error_y ───────────────→ 시각화·향후 확장
+GestureCommand ────────→ 추적 START/STOP 상태
+```
+
+객체가 미검출되면 속도 0을 발행하되 추적 상태는 유지한다. 객체가 다시 검출되었을
+때 기존 상태가 START이면 이동을 재개한다.
 
 ## 애플리케이션 내부 구조
 
