@@ -13,16 +13,24 @@ from gesture_robot.core.gesture_classifier import GestureClassifier
 
 class GestureNode(Node):
     """손 랜드마크를 제스처 명령으로 변환해 발행한다."""
-    def __init__(self, frame_source, detector, classifier):
-        # TODO: rclpy Node 상속, 의존 객체 저장, Publisher와 Timer 생성을 구현한다.
+    def __init__(self, frame_source):
         super().__init__("gesture_node")
         self._frame_source = frame_source
-        self._detector = detector
-        self._classifier = classifier
+
+        self.declare_parameter("max_num_hands", 1)
+        self.declare_parameter("min_detection_confidence", 0.7)
+        self.declare_parameter("min_tracking_confidence", 0.5)
+
+        self._detector = MediaPipeDetector(
+            max_num_hands=self.get_parameter("max_num_hands").value,
+            min_detection_confidence=self.get_parameter("min_detection_confidence").value,
+            min_tracking_confidence=self.get_parameter("min_tracking_confidence").value,
+        )
+        self._classifier = GestureClassifier()
 
         qos = QoSProfile(
             depth=10,
-            reliability= ReliabilityPolicy.RELIABLE,
+            reliability=ReliabilityPolicy.RELIABLE,
         )
         self._publisher = self.create_publisher(
             GestureCommandMsg, "gesture/command", qos
@@ -50,19 +58,11 @@ class GestureNode(Node):
         self._publisher.publish(msg)
 
 def main(args=None):
-    rclpy.init(args=args)                       # 1. ROS2 켜기
-    
-    # 의존성 생성
-    detector = MediaPipeDetector()              # MediaPipe 검출기
-    classifier = GestureClassifier()            # 제스처 분류기
-    # TODO: frame_source(카메라)가 준비되면 연결
-    # camera = OpenCVCamera()
-    # node = GestureNode(frame_source=camera, ...)
-    node = GestureNode(frame_source=None,
-                       detector=detector,
-                        classifier=classifier)  # 2. 노드 생성
-    rclpy.spin(node)                            # 3. 계속 실행
-    node.destroy_node()                         # 4. ROS2 끄기
+    rclpy.init(args=args)
+    # TODO: frame_source(카메라)가 준비되면 OpenCVCamera 연결
+    node = GestureNode(frame_source=None)
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__=="__main__":

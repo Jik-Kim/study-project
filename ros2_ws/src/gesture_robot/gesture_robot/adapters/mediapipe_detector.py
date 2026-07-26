@@ -5,12 +5,12 @@ from gesture_robot.core.models import GestureCommand, GestureResult
 
 class MediaPipeDetector:
     """영상 프레임에서 손 랜드마크를 검출한다."""
-    def __init__(self):
+    def __init__(self, max_num_hands=1, min_detection_confidence=0.7, min_tracking_confidence=0.5):
         self._hands = mp.solutions.hands.Hands(
             static_image_mode=False,
-            max_num_hands=1,
-            min_detection_confidence=0.7,
-            min_tracking_confidence=0.5,
+            max_num_hands=max_num_hands,
+            min_detection_confidence=min_detection_confidence,
+            min_tracking_confidence=min_tracking_confidence,
         )
     def detect(self, frame):
         """검출한 손 랜드마크를 반환한다."""
