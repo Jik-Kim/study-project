@@ -17,11 +17,24 @@ from gesture_robot_interfaces.msg import GestureCommand, TrackedObject
 | `command` | `uint8` | 인식된 제스처 명령 |
 | `confidence` | `float32` | 인식 신뢰도 |
 
+<<<<<<< HEAD
+[x]TODO: 명령 문자열을 유지할지 `uint8` 상수로 변경할지 결정한다.
+## `GestureCommand.msg`
+
+| 필드 | 의미 |
+|---|---|
+| `header` | 생성 시각과 좌표계 정보 |
+| `command` | 인식된 제스처 명령 (`uint8` 상수 사용: `NONE=0`, `START=1`, `STOP=2`) |
+| `confidence` | 인식 신뢰도 |
+
+- **상수값 정의:** `NONE=0`, `START=1`, `STOP=2` (2주차 회의 결과 반영 완료)
+=======
 | 상수 | 값 | 의미 |
 |---|---|---|
 | `NONE` | `0` | 손 미검출 또는 명령 없음. 기존 추적 상태 유지 |
 | `START` | `1` | 보자기 제스처. 추적 시작 |
 | `STOP` | `2` | 주먹 제스처. 추적 정지 |
+>>>>>>> origin/main
 
 ## `TrackedObject.msg`
 
@@ -76,4 +89,19 @@ from gesture_robot_interfaces.msg import GestureCommand, TrackedObject
 
 ## 미정 인터페이스
 
+<<<<<<< HEAD
+## 임시 통신 규격 및 검증 기록 (1차)
+
+- **임시 토픽 이름:** `/gesture/command` (테스트용 임시 지정)
+- **검증 내용:** `test_publisher.py`와 `test_subscriber.py` 노드를 통해 `/gesture/command` 토픽으로 `START(1)` 명령 및 신뢰도(`confidence: 0.95`) 정상 송수신 확인 완료 (2026-07-20, 이시율)
+
+## 미정 인터페이스
+
+- 정식 토픽 이름 확정
+- QoS 설정
+- 로봇 속도 명령 타입
+- 카메라 프레임 공유 방식
+
+=======
 - 이동 제어 파라미터의 수치 초깃값
+>>>>>>> origin/main

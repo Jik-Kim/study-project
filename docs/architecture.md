@@ -48,12 +48,15 @@ GestureCommand ────────→ 추적 START/STOP 상태
 nodes ──→ core
   │       ↑
   ├──→ adapters
-  └──→ visualization
+  ├──→ visualization
+  └──→ ui
 ```
 
 - `nodes`: rclpy 통신, rosidl 메시지 변환, 메서드 호출 순서
 - `core`: 프레임워크 독립 Python 알고리즘
 - `adapters`: OpenCV, MediaPipe, 시뮬레이터 연결
-- `visualization`: OpenCV 화면 출력
+- `visualization`: OpenCV 프레임 위에 검출 결과를 그려 넣는 오버레이 렌더링
+- `ui`: Tkinter 통합 실행 창 조립과 패널 배치(카메라·상태·시뮬레이션·토픽 흐름·속도
+  그래프), `visualization`이 만든 프레임과 `nodes`가 전달한 상태값을 화면에 표시
 
 현재 노드 파일에는 호출 순서만 있으며 실제 Publisher, Subscriber, `main()`은 TODO다.
