@@ -76,17 +76,17 @@ class ObjectTrackingNode(Node):
             durability=DurabilityPolicy.VOLATILE,
         )
 
-        # 4. Publisher 생성: /tracking/object (TrackedObject 메시지)
+        # 4. Publisher 생성: tracking/object (TrackedObject 메시지 - 상대 토픽 사용)
         self.publisher_ = self.create_publisher(
             TrackedObject,
-            "/tracking/object",
+            "tracking/object",
             qos_profile,
         )
 
-        # 5. Subscriber 생성: /camera/image_raw (sensor_msgs/Image 토픽 수신 시 process_image_msg 실행)
+        # 5. Subscriber 생성: camera/image_raw (sensor_msgs/Image 토픽 수신 시 process_image_msg 실행 - 상대 토픽 사용)
         self.subscription = self.create_subscription(
             Image,
-            "/camera/image_raw",
+            "camera/image_raw",
             self.image_callback,
             qos_profile,
         )
