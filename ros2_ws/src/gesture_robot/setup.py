@@ -25,6 +25,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gesture_node = gesture_robot.nodes.gesture_node:main",
+            "object_tracker = gesture_robot.nodes.object_tracking_node:main",
             "test_pub = gesture_robot.test_publisher:main",
             "test_sub = gesture_robot.test_subscriber:main",
         ],
