@@ -27,10 +27,10 @@ class MainUI:
 
     # SOT 확정 토픽 계약 (docs/SOT.md, 3주차 회의록 참고)
     _TOPICS = [
-        "/camera/image_raw",
-        "/gesture/command",
-        "/tracking/object",
-        "/turtle1/cmd_vel",
+        "camera/image_raw",
+        "gesture/command",
+        "tracking/object",
+        "turtle1/cmd_vel",
     ]
 
     def __init__(self) -> None:
