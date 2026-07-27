@@ -6,8 +6,8 @@ class GestureClassifier:
     """MediaPipe 랜드마크를 프로젝트 명령으로 변환한다."""
 
     def classify(self, hand_landmarks) -> GestureResult:
-        """인식된 손 모양에 대응하는 명령을 반환한다."""
-        # TODO: 손 펴기, 주먹, 방향 제스처의 판별 규칙을 구현한다.
+        if isinstance(hand_landmarks, GestureResult):
+            return hand_landmarks
         lm = hand_landmarks.landmark
         
         # 엄지 : TIP(4)과 IP(3) 사이 거리로 판별 (x-y 평면)
