@@ -59,4 +59,6 @@ nodes ──→ core
 - `ui`: Tkinter 통합 실행 창 조립과 패널 배치(카메라·상태·시뮬레이션·토픽 흐름·속도
   그래프), `visualization`이 만든 프레임과 `nodes`가 전달한 상태값을 화면에 표시
 
-현재 노드 파일에는 호출 순서만 있으며 실제 Publisher, Subscriber, `main()`은 TODO다.
+`camera_node`, `controller_node`, `simulation_node`는 아직 구현과 실행 등록이 남아 있다.
+`gesture_node`와 `object_tracking_node`는 구현되어 있으나 카메라 입력을 포함한 전체
+통합 검증이 필요하다.
