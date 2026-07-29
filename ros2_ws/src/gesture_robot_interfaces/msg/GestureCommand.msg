@@ -9,4 +9,3 @@ uint8 STOP=2
 
 uint8 command
 float32 confidence
-

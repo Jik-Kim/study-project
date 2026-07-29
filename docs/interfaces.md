@@ -17,6 +17,8 @@ from gesture_robot_interfaces.msg import GestureCommand, TrackedObject
 | `command` | `uint8` | 인식된 제스처 명령 |
 | `confidence` | `float32` | 인식 신뢰도 |
 
+### 명령 상수
+
 | 상수 | 값 | 의미 |
 |---|---|---|
 | `NONE` | `0` | 손 미검출 또는 명령 없음. 기존 추적 상태 유지 |
