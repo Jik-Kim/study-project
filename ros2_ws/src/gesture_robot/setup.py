@@ -24,7 +24,6 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "camera_node = gesture_robot.nodes.camera_node:main",
             "gesture_node = gesture_robot.nodes.gesture_node:main",
             "object_tracking_node = gesture_robot.nodes.object_tracking_node:main",
             "controller_node = gesture_robot.nodes.controller_node:main",
