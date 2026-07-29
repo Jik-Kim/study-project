@@ -84,13 +84,13 @@ class ControllerNode(Node):
         """Subscriber를 생성한다."""
         self._gesture_sub = self.create_subscription(
             GestureCommand,
-            "/gesture/command",
+            "gesture/command",
             self._on_gesture_command,
             self._reliable_qos,
         )
         self._tracking_sub = self.create_subscription(
             TrackedObject,
-            "/tracking/result",
+            "tracking/object",
             self._on_tracking_result,
             self._best_effort_qos,
         )
@@ -100,7 +100,7 @@ class ControllerNode(Node):
         """Publisher를 생성한다."""
         self._velocity_pub = self.create_publisher(
             Twist,
-            "/turtle1/cmd_vel",
+            "turtle1/cmd_vel",
             self._reliable_qos,
         )
 
