@@ -78,6 +78,19 @@ Python 데이터와 rosidl 메시지 사이의 변환 및 호출 순서를 담�
   QoS를 사용한다.
 - 최종 MVP 시뮬레이션은 turtlesim을 사용한다.
 
+### 확정 노드 이름
+
+| ROS2 노드 이름 | 책임 |
+|---|---|
+| `camera_node` | 단일 카메라 프레임을 `/camera/image_raw`로 발행 |
+| `gesture_node` | 카메라 프레임에서 제스처를 인식해 `/gesture/command`를 발행 |
+| `object_tracking_node` | 카메라 프레임에서 빨간 공을 추적해 `/tracking/object`를 발행 |
+| `controller_node` | 제스처와 객체 추적 결과로 `/turtle1/cmd_vel` 속도를 계산·발행 |
+| `simulation_node` | turtlesim 실행과 시뮬레이션 연동을 담당 |
+
+이 이름은 MVP 노드 연결의 기준으로 사용한다. 노드 구현에서는 상대 토픽 이름을
+사용하고, 문서에는 루트 namespace 기준의 전체 토픽 이름을 표기한다.
+
 ## 공통 인터페이스 계약
 
 ### `GestureCommand.msg`

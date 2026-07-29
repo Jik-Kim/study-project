@@ -71,6 +71,9 @@ from gesture_robot_interfaces.msg import GestureCommand, TrackedObject
 노드 구현에서는 상대 토픽 이름을 사용하고, 문서에는 루트 namespace 기준의
 전체 토픽 이름을 표기한다. MVP에서는 별도 namespace와 remapping을 사용하지 않는다.
 
+확정 노드 이름은 `camera_node`, `gesture_node`, `object_tracking_node`,
+`controller_node`, `simulation_node`다. 각 노드의 책임은 `docs/SOT.md`를 따른다.
+
 ## QoS 원칙
 
 - 제스처 시작·정지 명령과 turtlesim 속도 명령은 RELIABLE을 사용한다.
