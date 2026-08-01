@@ -7,11 +7,13 @@
   <maintainer email="team@example.com">gesture_robot team</maintainer>
   <license>MIT</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-
-  <!-- TODO: launch 구현 후 ros2launch, turtlesim, gesture_robot 의존성을 추가한다. -->
+  <exec_depend>ros2launch</exec_depend>
+  <exec_depend>turtlesim</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>gesture_robot</exec_depend>
+  <exec_depend>gesture_robot_interfaces</exec_depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>ament_python</build_type>
   </export>
 </package>
