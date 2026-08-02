@@ -59,6 +59,7 @@ nodes ──→ core
 - `ui`: Tkinter 통합 실행 창 조립과 패널 배치(카메라·상태·시뮬레이션·토픽 흐름·속도
   그래프), `visualization`이 만든 프레임과 `nodes`가 전달한 상태값을 화면에 표시
 
-`camera_node`, `controller_node`, `simulation_node`는 아직 구현과 실행 등록이 남아 있다.
-`gesture_node`와 `object_tracking_node`는 구현되어 있으나 카메라 입력을 포함한 전체
-통합 검증이 필요하다.
+`simulation_node`는 아직 구현이 남아 있다(controller_node가 `turtle1/cmd_vel`을 직접
+발행해 turtlesim 기준으로는 별도 구현이 필요 없을 수 있음, 팀 논의 필요).
+`camera_node`, `gesture_node`, `object_tracking_node`, `controller_node`는 구현되어
+있으며, 실제 웹캠·turtlesim·Gazebo 환경에서의 전체 통합 검증이 필요하다.
