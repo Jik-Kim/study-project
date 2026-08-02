@@ -15,6 +15,10 @@ setup(
             os.path.join("share", PACKAGE_NAME, "launch"),
             glob(os.path.join("launch", "*.launch.py")),
         ),
+        (
+            os.path.join("share", PACKAGE_NAME, "params"),
+            glob(os.path.join("params", "*.yaml")),
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
