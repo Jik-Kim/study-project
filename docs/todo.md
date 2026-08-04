@@ -35,9 +35,15 @@
 
 ### `gesture_robot/adapters/opencv_camera.py`
 
-- [ ] `OpenCVCamera.open()`: 카메라 연결
-- [ ] `OpenCVCamera.read()`: 프레임 읽기
-- [ ] `OpenCVCamera.release()`: 카메라 자원 해제
+- [x] `OpenCVCamera.open()`: 카메라 연결
+- [x] `OpenCVCamera.read()`: 프레임 읽기
+- [x] `OpenCVCamera.release()`: 카메라 자원 해제
+
+### `gesture_robot/nodes/camera_node.py`
+
+- [x] `CameraNode.__init__()`: Publisher, Timer, 파라미터(device_id, publish_rate) 구성
+- [x] `CameraNode._on_timer()`: 프레임 읽어 `camera/image_raw` 발행
+- [x] `setup.py console_scripts` 등록
 
 ### `gesture_robot/core/color_tracker.py`
 

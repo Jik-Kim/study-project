@@ -1,63 +1,147 @@
+"""Gazebo(turtlebot3_gazebo + ros_gz_bridge) 기반 통합 시뮬레이션 실행.
+
+turtlesim 대신 Gazebo에서 turtlebot3(burger)를 스폰하고, controller_node가
+발행하는 geometry_msgs/msg/Twist를 ros_gz_bridge로 Gazebo에 전달해 제스처
+기반 이동을 확인한다. Gazebo GUI는 Tkinter UI와 분리된 별도 창으로 띄운다.
+
+주의: 이 환경(ROS2 Jazzy)에는 구버전 `gazebo_ros`가 아니라 `ros_gz_sim` /
+`ros_gz_bridge` 및 `turtlebot3_gazebo`가 설치되어 있어, 해당 패키지의 자원
+(월드, 로봇 모델, robot_state_publisher launch)을 재사용한다.
+"""
+
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
+from launch.actions import (
+    AppendEnvironmentVariable,
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    SetEnvironmentVariable,
+)
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    tb3_gazebo_share = get_package_share_directory("turtlebot3_gazebo")
+    sim_bringup_share = get_package_share_directory("sim_bringup")
+    ros_gz_sim_share = get_package_share_directory("ros_gz_sim")
+
     use_sim_time = LaunchConfiguration("use_sim_time", default="true")
-    cmd_vel_topic = LaunchConfiguration("cmd_vel_topic", default="/cmd_vel")
+    turtlebot3_model = LaunchConfiguration("turtlebot3_model", default="burger")
+    x_pose = LaunchConfiguration("x_pose", default="0.0")
+    y_pose = LaunchConfiguration("y_pose", default="0.0")
+
+    world = os.path.join(tb3_gazebo_share, "worlds", "empty_world.world")
+    model_sdf = os.path.join(
+        tb3_gazebo_share, "models", "turtlebot3_burger", "model.sdf"
+    )
+    bridge_params = os.path.join(
+        sim_bringup_share, "params", "turtlebot3_burger_twist_bridge.yaml"
+    )
+
+    # Gazebo는 TURTLEBOT3_MODEL 환경변수로 로봇 모델(urdf/모델 폴더명)을 찾는다.
+    set_turtlebot3_model = SetEnvironmentVariable("TURTLEBOT3_MODEL", turtlebot3_model)
+
+    set_env_vars_resources = AppendEnvironmentVariable(
+        "GZ_SIM_RESOURCE_PATH",
+        os.path.join(tb3_gazebo_share, "models"),
+    )
+
+    # 서버(물리 연산)와 클라이언트(GUI 창)를 분리 실행 -> Gazebo는 별도 창으로 표시된다.
+    gzserver_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim_share, "launch", "gz_sim.launch.py")
+        ),
+        launch_arguments={"gz_args": ["-r -s -v2 ", world], "on_exit_shutdown": "true"}.items(),
+    )
+    gzclient_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(ros_gz_sim_share, "launch", "gz_sim.launch.py")
+        ),
+        launch_arguments={"gz_args": "-g -v2 "}.items(),
+    )
+
+    robot_state_publisher_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(tb3_gazebo_share, "launch", "robot_state_publisher.launch.py")
+        ),
+        launch_arguments={"use_sim_time": use_sim_time}.items(),
+    )
+
+    spawn_turtlebot_cmd = Node(
+        package="ros_gz_sim",
+        executable="create",
+        arguments=["-name", turtlebot3_model, "-file", model_sdf, "-x", x_pose, "-y", y_pose, "-z", "0.01"],
+        output="screen",
+    )
+
+    # controller_node(Twist)와 Gazebo DiffDrive(gz.msgs.Twist)를 연결하는 브릿지.
+    # turtlebot3_gazebo 기본 브릿지는 TwistStamped라 controller_node와 타입이 맞지 않아
+    # cmd_vel만 Twist로 바꾼 sim_bringup 자체 설정을 사용한다.
+    bridge_cmd = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=["--ros-args", "-p", f"config_file:={bridge_params}"],
+        output="screen",
+    )
+
+    # --- gesture_robot 파이프라인 (카메라 -> 제스처/추적 -> 제어 -> Gazebo) ---
+    camera_node_cmd = Node(
+        package="gesture_robot",
+        executable="camera_node",
+        name="camera_node",
+        output="screen",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+    gesture_node_cmd = Node(
+        package="gesture_robot",
+        executable="gesture_node",
+        name="gesture_node",
+        output="screen",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+    object_tracking_node_cmd = Node(
+        package="gesture_robot",
+        executable="object_tracking_node",
+        name="object_tracking_node",
+        output="screen",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+    controller_node_cmd = Node(
+        package="gesture_robot",
+        executable="controller_node",
+        name="controller_node",
+        output="screen",
+        parameters=[{"use_sim_time": use_sim_time}],
+        # turtlesim 전용 토픽명을 Gazebo 브릿지가 구독하는 cmd_vel로 remap한다.
+        remappings=[("turtle1/cmd_vel", "cmd_vel")],
+    )
+    main_ui_cmd = Node(
+        package="gesture_robot",
+        executable="main_ui",
+        name="main_ui",
+        output="screen",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
 
     return LaunchDescription([
-        DeclareLaunchArgument(
-            "use_sim_time",
-            default_value="true",
-            description="Use simulation (Gazebo) clock if true",
-        ),
-        DeclareLaunchArgument(
-            "cmd_vel_topic",
-            default_value="/cmd_vel",
-            description="Target velocity topic for Gazebo robot",
-        ),
-        # 카메라 입력 노드
-        Node(
-            package="gesture_robot",
-            executable="camera_node",
-            name="camera_node",
-            output="screen",
-            parameters=[{"use_sim_time": use_sim_time}],
-        ),
-        # 제스처 인식 노드
-        Node(
-            package="gesture_robot",
-            executable="gesture_node",
-            name="gesture_node",
-            output="screen",
-            parameters=[{"use_sim_time": use_sim_time}],
-        ),
-        # 객체 추적 노드
-        Node(
-            package="gesture_robot",
-            executable="object_tracking_node",
-            name="object_tracking_node",
-            output="screen",
-            parameters=[{"use_sim_time": use_sim_time}],
-        ),
-        # 이동 제어 노드 (Gazebo의 /cmd_vel로 토픽 remapping 지원)
-        Node(
-            package="gesture_robot",
-            executable="controller_node",
-            name="controller_node",
-            output="screen",
-            parameters=[{"use_sim_time": use_sim_time}],
-            remappings=[("turtle1/cmd_vel", cmd_vel_topic)],
-        ),
-        # 통합 시각화 UI 노드
-        Node(
-            package="gesture_robot",
-            executable="main_ui",
-            name="main_ui",
-            output="screen",
-            parameters=[{"use_sim_time": use_sim_time}],
-        ),
+        DeclareLaunchArgument("use_sim_time", default_value="true"),
+        DeclareLaunchArgument("turtlebot3_model", default_value="burger"),
+        DeclareLaunchArgument("x_pose", default_value="0.0"),
+        DeclareLaunchArgument("y_pose", default_value="0.0"),
+        set_turtlebot3_model,
+        set_env_vars_resources,
+        gzserver_cmd,
+        gzclient_cmd,
+        robot_state_publisher_cmd,
+        spawn_turtlebot_cmd,
+        bridge_cmd,
+        camera_node_cmd,
+        gesture_node_cmd,
+        object_tracking_node_cmd,
+        controller_node_cmd,
+        main_ui_cmd,
     ])
