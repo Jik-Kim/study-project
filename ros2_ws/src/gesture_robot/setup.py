@@ -29,7 +29,7 @@ setup(
             "object_tracking_node = gesture_robot.nodes.object_tracking_node:main",
             "controller_node = gesture_robot.nodes.controller_node:main",
             "simulation_node = gesture_robot.nodes.simulation_node:main",
-            "main_ui = gesture_robot.ui.main_ui:main",
+            "main_ui = gesture_robot.nodes.main_ui_node:main",
             "test_pub = gesture_robot.test_publisher:main",
             "test_sub = gesture_robot.test_subscriber:main",
         ],

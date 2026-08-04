@@ -52,13 +52,14 @@
 
 ### `gesture_robot/visualization/tracking_visualizer.py`
 
-- [ ] `TrackingVisualizer.render()`: 객체 위치와 상태 표시
+- [x] `TrackingVisualizer.render()`: 바운딩 박스·중심점·상태 텍스트 표시
 
 ### `gesture_robot/nodes/object_tracking_node.py`
 
-- [ ] `ObjectTrackingNode.__init__()`: Publisher, Timer, 파라미터 구성
-- [ ] `ObjectTrackingNode.process_frame()`: 추적 처리 흐름 연결
-- [ ] `ObjectTrackingNode.publish_tracking_result()`: `TrackedObject` 발행
+- [x] `ObjectTrackingNode.__init__()`: Publisher, Timer, 파라미터 구성
+- [x] `ObjectTrackingNode.process_frame()`: 추적 처리 흐름 연결
+- [x] `ObjectTrackingNode.publish_tracking_result()`: `TrackedObject` 발행
+- [x] 시각화된 프레임을 `camera/image_annotated`로 발행
 
 ## 제스처 인식
 
@@ -73,9 +74,10 @@
 
 ### `gesture_robot/nodes/gesture_node.py`
 
-- [ ] `GestureNode.__init__()`: Publisher, Timer, 파라미터 구성
-- [ ] `GestureNode.process_frame()`: 제스처 처리 흐름 연결
-- [ ] `GestureNode.publish_gesture_command()`: `GestureCommand` 발행
+- [x] `GestureNode.__init__()`: Publisher, Subscriber, 파라미터 구성
+- [x] `GestureNode._image_callback()`: 제스처 처리 흐름 연결
+- [x] `GestureNode.publish_gesture_command()`: `GestureCommand` 발행
+- [x] 손 랜드마크를 그린 프레임을 `camera/image_annotated`로 발행
 
 ## 상태 및 제어
 
@@ -118,11 +120,17 @@
 - [x] `MainUI._build_topic_flow()`: SOT 확정 4개 토픽 흐름 영역 배치
 - [x] `MainUI._build_velocity()`: 속도값 실시간 그래프 영역 배치
 - [x] `MainUI._tick()`: 모의 데이터로 UI 갱신 (상태·토픽 흐름·속도 그래프 포함)
-- [ ] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
-- [ ] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
-- [ ] `MainUI.update_topic_activity()`: 실제 노드 Publish 시점과 연동
-- [ ] `MainUI.update_velocity()`: `controller_node`가 발행한 실제 `Twist` 값으로 갱신
-- [ ] `main()`: setup.py console_scripts 등록
+- [x] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
+- [x] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
+- [x] `MainUI.update_topic_activity()`: 실제 노드 Publish 시점과 연동
+- [x] `MainUI.update_velocity()`: `controller_node`가 발행한 실제 `Twist` 값으로 갱신
+- [x] `use_mock` 플래그 추가 (standalone 테스트용 모의 모드 유지)
+
+### `gesture_robot/nodes/main_ui_node.py` (신규)
+
+- [x] `camera/image_annotated`, `gesture/command`, `tracking/object`, `turtle1/cmd_vel` 구독
+- [x] MainUI의 update_* 메서드와 연결
+- [x] `main()`: Tkinter mainloop와 rclpy spin 공존 처리, setup.py console_scripts 등록
 
 ## 실행 설정
 

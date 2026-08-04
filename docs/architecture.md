@@ -17,9 +17,10 @@ sim_bringup (turtlesim 실행·통합 launch)
 ## 데이터 흐름
 
 ```text
-camera_node ── /camera/image_raw ─┬─ gesture_node
-                                 │       └─ /gesture/command ─┐
-                                 └─ object_tracking_node      │
+camera_node ── /camera/image_raw ─┬─ gesture_node ── /camera/image_annotated ─┐
+                                 │       └─ /gesture/command ─┐               │
+                                 └─ object_tracking_node      │               ├─→ main_ui (CAMERA 패널)
+                                      ├─ /camera/image_annotated ─────────────┘
                                       └─ /tracking/object ────┤
                                                               ▼
                                                        controller_node
@@ -28,6 +29,11 @@ camera_node ── /camera/image_raw ─┬─ gesture_node
                                                               ▼
                                                          turtlesim
 ```
+
+`gesture_node`와 `object_tracking_node`는 각자 원본 프레임에 손 랜드마크/객체
+바운딩 박스를 그려 동일한 `camera/image_annotated` 토픽에 독립적으로 발행한다.
+`main_ui`는 두 발행자 중 먼저 도착한 프레임을 그대로 표시하므로, 한 프레임에
+손과 객체 표시가 항상 동시에 나타나지는 않는다.
 
 거북이에 전방 카메라가 장착된 것으로 가정한다. 제어 노드는 다음 입력 관계로
 turtlesim의 속도를 계산한다.

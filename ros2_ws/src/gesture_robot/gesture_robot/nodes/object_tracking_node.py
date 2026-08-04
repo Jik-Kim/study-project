@@ -21,6 +21,7 @@ from gesture_robot_interfaces.msg import TrackedObject
 # 내부 코어 모듈 불러오기
 from gesture_robot.core.color_tracker import ColorTracker
 from gesture_robot.core.models import TrackingResult
+from gesture_robot.visualization.tracking_visualizer import TrackingVisualizer
 
 
 class ObjectTrackingNode(Node):
@@ -83,6 +84,15 @@ class ObjectTrackingNode(Node):
             qos_profile,
         )
 
+        # 4-1. 시각화된 프레임 발행: camera/image_annotated
+        # gesture_node도 같은 토픽에 손 랜드마크를 그려 발행하므로(각자 독립적으로
+        # annotate), main_ui는 두 노드 중 먼저 도착한 프레임을 그대로 표시한다.
+        self.annotated_publisher = self.create_publisher(
+            Image,
+            "camera/image_annotated",
+            qos_profile,
+        )
+
         # 5. Subscriber 생성: camera/image_raw (sensor_msgs/Image 토픽 수신 시 process_image_msg 실행 - 상대 토픽 사용)
         self.subscription = self.create_subscription(
             Image,
@@ -120,12 +130,23 @@ class ObjectTrackingNode(Node):
         # 코어 추적 알고리즘 실행 (TrackingResult, debug_info 반환)
         tracking_result, debug_info = self.tracker.track(frame)
 
-        # 시각화 어댑터가 있는 경우 디버깅 오버레이 렌더링
+        # 시각화 어댑터가 있는 경우 디버깅 오버레이 렌더링 후 발행
         if self.visualizer is not None:
             self.visualizer.render(frame, tracking_result, debug_info)
+            self._publish_annotated_frame(frame, header)
 
         # 추적 결과를 rosidl TrackedObject 메시지로 변환 후 토픽 발행
         self.publish_tracking_result(tracking_result, header)
+
+    def _publish_annotated_frame(self, frame: Any, header: Optional[Any] = None) -> None:
+        """바운딩 박스가 그려진 프레임을 camera/image_annotated로 발행합니다."""
+        msg = self.bridge.cv2_to_imgmsg(frame, encoding="bgr8")
+        if header is not None:
+            msg.header = header
+        else:
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.header.frame_id = "camera_frame"
+        self.annotated_publisher.publish(msg)
 
     def publish_tracking_result(self, result: TrackingResult, header: Optional[Any] = None) -> None:
         """TrackingResult 코어 모델을 TrackedObject rosidl 메시지로 변환하여 발행합니다."""
@@ -154,7 +175,7 @@ class ObjectTrackingNode(Node):
 def main(args=None) -> None:
     """노드 실행 진입점."""
     rclpy.init(args=args)
-    node = ObjectTrackingNode()
+    node = ObjectTrackingNode(visualizer=TrackingVisualizer())
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
