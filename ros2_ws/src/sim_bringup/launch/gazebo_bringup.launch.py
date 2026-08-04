@@ -88,43 +88,19 @@ def generate_launch_description():
         output="screen",
     )
 
-    # --- gesture_robot 파이프라인 (카메라 -> 제스처/추적 -> 제어 -> Gazebo) ---
-    camera_node_cmd = Node(
-        package="gesture_robot",
-        executable="camera_node",
-        name="camera_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
+    # --- gesture_robot 5개 노드 파이프라인 ---
+    # gesture_robot.launch.py를 include해 재사용한다 (params.yaml 연동 포함,
+    # turtlesim_bringup.launch.py와의 노드 정의 중복 방지).
+    # cmd_vel_topic을 "cmd_vel"로 override해 Gazebo 브릿지가 구독하는 토픽에 맞춘다.
+    gesture_robot_launch = os.path.join(
+        get_package_share_directory("gesture_robot"), "launch", "gesture_robot.launch.py"
     )
-    gesture_node_cmd = Node(
-        package="gesture_robot",
-        executable="gesture_node",
-        name="gesture_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-    )
-    object_tracking_node_cmd = Node(
-        package="gesture_robot",
-        executable="object_tracking_node",
-        name="object_tracking_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-    )
-    controller_node_cmd = Node(
-        package="gesture_robot",
-        executable="controller_node",
-        name="controller_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-        # turtlesim 전용 토픽명을 Gazebo 브릿지가 구독하는 cmd_vel로 remap한다.
-        remappings=[("turtle1/cmd_vel", "cmd_vel")],
-    )
-    main_ui_cmd = Node(
-        package="gesture_robot",
-        executable="main_ui",
-        name="main_ui",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
+    gesture_robot_pipeline = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(gesture_robot_launch),
+        launch_arguments={
+            "cmd_vel_topic": "cmd_vel",
+            "use_sim_time": use_sim_time,
+        }.items(),
     )
 
     return LaunchDescription([
@@ -139,9 +115,5 @@ def generate_launch_description():
         robot_state_publisher_cmd,
         spawn_turtlebot_cmd,
         bridge_cmd,
-        camera_node_cmd,
-        gesture_node_cmd,
-        object_tracking_node_cmd,
-        controller_node_cmd,
-        main_ui_cmd,
+        gesture_robot_pipeline,
     ])
