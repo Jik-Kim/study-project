@@ -69,3 +69,9 @@ nodes ──→ core
 발행해 turtlesim 기준으로는 별도 구현이 필요 없을 수 있음, 팀 논의 필요).
 `camera_node`, `gesture_node`, `object_tracking_node`, `controller_node`는 구현되어
 있으며, 실제 웹캠·turtlesim·Gazebo 환경에서의 전체 통합 검증이 필요하다.
+
+`docs/SOT.md`의 "손 위치 추적 데모" 참고: 실제 공 없이 시연할 때는
+`controller_node` 대신 `core/pursuit_controller.py` 기반의
+`turtle_pursuit_node`/`gazebo_pursuit_node`를 사용한다(로봇의 실제 pose와
+목표 좌표를 직접 비교하는 방식으로, 화면 오차 기반인 `tracking_controller.py`와
+전제가 다르다).

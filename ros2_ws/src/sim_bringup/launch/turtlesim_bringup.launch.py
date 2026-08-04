@@ -26,6 +26,15 @@ def generate_launch_description():
         output="screen",
     )
 
+    # tracking/object(손 위치 또는 HSV 추적 결과)를 turtlesim 위 'target' turtle로
+    # 시각화한다. turtle1은 controller_node를 통해 이 위치를 따라간다.
+    target_marker_node = Node(
+        package="gesture_robot",
+        executable="target_marker_node",
+        name="target_marker_node",
+        output="screen",
+    )
+
     # cmd_vel_topic은 기본값(turtle1/cmd_vel)을 그대로 사용해 turtlesim과 바로 연결한다.
     gesture_robot_pipeline = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gesture_robot_launch)
@@ -33,5 +42,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         turtlesim_node,
+        target_marker_node,
         gesture_robot_pipeline,
     ])

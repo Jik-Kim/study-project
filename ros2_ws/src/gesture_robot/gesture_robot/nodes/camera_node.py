@@ -1,5 +1,6 @@
 """단일 카메라 프레임 발행 ROS2 노드."""
 
+import cv2
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
@@ -20,6 +21,7 @@ class CameraNode(Node):
             parameters=[
                 ("device_id", 0),
                 ("publish_rate", 30.0),
+                ("mirror", True),
             ],
         )
 
@@ -49,6 +51,10 @@ class CameraNode(Node):
         frame = self._camera.read()
         if frame is None:
             return
+        if self.get_parameter("mirror").value:
+            # 셀카 화면처럼 좌우 반전한다. 이후 모든 노드(제스처/추적/표시)가
+            # 이 반전된 프레임을 기준으로 동작하므로 별도 보정이 필요 없다.
+            frame = cv2.flip(frame, 1)
         msg = self._bridge.cv2_to_imgmsg(frame, encoding="bgr8")
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = "camera_frame"
