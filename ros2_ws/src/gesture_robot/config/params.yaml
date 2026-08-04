@@ -9,14 +9,28 @@ gesture_node:
     min_detection_confidence: 0.7
     min_tracking_confidence: 0.5
 
-# object_tracking_node:
-#   ros__parameters:
-#     TODO: 카메라와 HSV 색상 추적 설정을 정의한다.
+object_tracking_node:
+  ros__parameters:
+    min_area_threshold: 500.0
+    hue_min1: 0
+    hue_max1: 10
+    hue_min2: 170
+    hue_max2: 179
+    sat_min: 100
+    sat_max: 255
+    val_min: 100
+    val_max: 255
+    kernel_size: 5
+    publish_rate: 30.0
 
-# controller_node:
-#   ros__parameters:
-#     TODO: 목표 거리와 속도 제어 설정을 정의한다.
+controller_node:
+  ros__parameters:
+    linear_gain: 0.001
+    angular_gain: 0.001
+    target_area: 2000.0
+    area_deadband: 100.0
+    angular_deadband: 10.0
+    max_linear_speed: 2.0
+    max_angular_speed: 2.0
+    tracking_timeout_sec: 0.5
 
-# simulation_node:
-#   ros__parameters:
-#     TODO: turtlesim 또는 Gazebo 설정을 정의한다.
