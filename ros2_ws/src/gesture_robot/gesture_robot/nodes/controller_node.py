@@ -40,8 +40,8 @@ class ControllerNode(Node):
         self.declare_parameters(
             namespace="",
             parameters=[
-                ("linear_gain", 0.001),
-                ("angular_gain", 0.001),
+                ("linear_gain", 0.004),
+                ("angular_gain", 0.004),
                 ("target_area", 2000.0),
                 ("area_deadband", 100.0),
                 ("angular_deadband", 10.0),
