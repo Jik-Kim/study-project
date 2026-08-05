@@ -52,13 +52,14 @@
 
 ### `gesture_robot/visualization/tracking_visualizer.py`
 
-- [ ] `TrackingVisualizer.render()`: 객체 위치와 상태 표시
+- [x] `TrackingVisualizer.render()`: 바운딩 박스·중심점·상태 텍스트 표시
 
 ### `gesture_robot/nodes/object_tracking_node.py`
 
-- [ ] `ObjectTrackingNode.__init__()`: Publisher, Timer, 파라미터 구성
-- [ ] `ObjectTrackingNode.process_frame()`: 추적 처리 흐름 연결
-- [ ] `ObjectTrackingNode.publish_tracking_result()`: `TrackedObject` 발행
+- [x] `ObjectTrackingNode.__init__()`: Publisher, Timer, 파라미터 구성
+- [x] `ObjectTrackingNode.process_frame()`: 추적 처리 흐름 연결
+- [x] `ObjectTrackingNode.publish_tracking_result()`: `TrackedObject` 발행
+- [x] 시각화된 프레임을 `camera/image_annotated`로 발행
 
 ## 제스처 인식
 
@@ -73,9 +74,10 @@
 
 ### `gesture_robot/nodes/gesture_node.py`
 
-- [ ] `GestureNode.__init__()`: Publisher, Timer, 파라미터 구성
-- [ ] `GestureNode.process_frame()`: 제스처 처리 흐름 연결
-- [ ] `GestureNode.publish_gesture_command()`: `GestureCommand` 발행
+- [x] `GestureNode.__init__()`: Publisher, Subscriber, 파라미터 구성
+- [x] `GestureNode._image_callback()`: 제스처 처리 흐름 연결
+- [x] `GestureNode.publish_gesture_command()`: `GestureCommand` 발행
+- [x] 손 랜드마크를 그린 프레임을 `camera/image_annotated`로 발행
 
 ## 상태 및 제어
 
@@ -118,11 +120,64 @@
 - [x] `MainUI._build_topic_flow()`: SOT 확정 4개 토픽 흐름 영역 배치
 - [x] `MainUI._build_velocity()`: 속도값 실시간 그래프 영역 배치
 - [x] `MainUI._tick()`: 모의 데이터로 UI 갱신 (상태·토픽 흐름·속도 그래프 포함)
-- [ ] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
-- [ ] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
-- [ ] `MainUI.update_topic_activity()`: 실제 노드 Publish 시점과 연동
-- [ ] `MainUI.update_velocity()`: `controller_node`가 발행한 실제 `Twist` 값으로 갱신
-- [ ] `main()`: setup.py console_scripts 등록
+- [x] `MainUI.update_camera_frame()`: ROS2 Subscribe 연동 후 실제 프레임 표시
+- [x] `MainUI.update_status()`: ROS2 Topic 실시간 데이터로 갱신
+- [x] `MainUI.update_topic_activity()`: 실제 노드 Publish 시점과 연동
+- [x] `MainUI.update_velocity()`: `controller_node`가 발행한 실제 `Twist` 값으로 갱신
+- [x] `use_mock` 플래그 추가 (standalone 테스트용 모의 모드 유지)
+
+### `gesture_robot/nodes/main_ui_node.py` (신규)
+
+- [x] `camera/image_annotated`, `gesture/command`, `tracking/object`, `turtle1/cmd_vel` 구독
+- [x] MainUI의 update_* 메서드와 연결
+- [x] `main()`: Tkinter mainloop와 rclpy spin 공존 처리, setup.py console_scripts 등록
+
+## 손 위치 추적 데모 (turtlesim/Gazebo)
+
+실제 공 없이 손 위치만으로 turtlesim/Gazebo 추적을 시연하기 위한 보조 기능.
+`controller_node`/`tracking_controller.py`(실제 공·카메라-온-로봇 전제)는
+건드리지 않고 별도 노드로 구성했다. 이 노드들은 `controller_node`와 동시에
+실행하면 안 된다(같은 cmd_vel 토픽 충돌).
+
+### `gesture_robot/nodes/gesture_node.py` (추가)
+
+- [x] 손 랜드마크 중심 좌표를 `TrackedObject`로 변환해 `tracking/object`에 발행
+  (`hand_area_scale` 파라미터로 공 기준 스케일에 맞춤)
+- [x] START(편 손)일 때만 detected=True, STOP/NONE(주먹·미검출)이면
+  detected=False로 발행해 추적 대상이 사라진 것처럼 동작
+
+### `gesture_robot/nodes/camera_node.py` (추가)
+
+- [x] `mirror` 파라미터로 좌우 반전(셀카 모드) 지원
+
+### `gesture_robot/core/pursuit_controller.py` (신규)
+
+- [x] `PursuitController.calculate()`: 로봇의 실제 pose와 목표 좌표로 추적
+  속도 계산 (화면 오차가 아닌 절대 좌표 기반, turtlesim/Gazebo 공용)
+
+### `gesture_robot/nodes/target_marker_node.py` (신규)
+
+- [x] turtlesim에 `target` turtle을 스폰해 손 위치를 순간이동으로 표시
+
+### `gesture_robot/nodes/turtle_pursuit_node.py` (신규)
+
+- [x] `/turtle1/pose`, `/target/pose`, `gesture/command`로 turtle1이 target을
+  실제로 추적하도록 `cmd_vel` 발행, 제스처 STOP 시 즉시 정지
+
+### `gesture_robot/nodes/gazebo_pursuit_node.py` (신규)
+
+- [x] `/odom`, `tracking/object`, `gesture/command`로 turtlebot3(Gazebo)가
+  손 위치를 추적하도록 `cmd_vel` 발행
+
+### `sim_bringup/config/topdown_gui.config` (신규)
+
+- [x] Gazebo GUI 카메라를 탑뷰로 설정 (SDF `<gui><camera>`는 이 gz-sim
+  버전에서 미지원이라 별도 GUI 플러그인 설정 파일 사용)
+
+### `sim_bringup/models/turtlebot3_burger_big.sdf` (신규)
+
+- [x] 화면 가시성을 위해 시각적 크기만 2배로 키운 burger 모델
+  (충돌/관성 등 물리 속성은 원본과 동일)
 
 ## 실행 설정
 

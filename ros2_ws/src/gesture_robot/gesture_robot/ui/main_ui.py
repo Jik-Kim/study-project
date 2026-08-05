@@ -33,7 +33,7 @@ class MainUI:
         "turtle1/cmd_vel",
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, use_mock: bool = True) -> None:
         self.root = tk.Tk()
         self.root.title(self._TITLE)
         self.root.geometry(f"{self._WIDTH}x{self._HEIGHT}")
@@ -45,7 +45,8 @@ class MainUI:
         self._angular_history: deque[float] = deque(maxlen=self._VEL_MAXLEN)
 
         self._build_ui()
-        self._mock_start()
+        if use_mock:
+            self._mock_start()
 
     # --- Build UI ---
 

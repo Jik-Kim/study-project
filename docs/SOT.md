@@ -164,7 +164,11 @@ float32 confidence
 - 파라미터 이름은 `linear_gain`, `angular_gain`, `target_area`,
   `area_deadband`, `angular_deadband`, `max_linear_speed`,
   `max_angular_speed`, `tracking_timeout_sec`를 사용한다.
-- 수치 초깃값은 실제 카메라와 turtlesim 통합 테스트 후 확정한다.
+- `linear_gain`, `angular_gain`은 0.001에서 0.004로 상향 조정했다 (손 위치를
+  대신 추적하는 실제 웹캠+turtlesim/Gazebo 통합 테스트 결과, 기존 값은
+  반응이 너무 느렸음). 실제 빨간 공으로도 재검증 필요.
+- `target_area` 등 나머지 값은 아직 빨간 공 기준 초깃값 그대로이며, 실제
+  카메라·조명 환경에서 추가 보정이 필요하다.
 
 ## 역할과 리뷰 담당
 
@@ -190,9 +194,20 @@ float32 confidence
 - 노드와 토픽 흐름
 - 속도값 실시간 그래프
 
+## 손 위치 추적 데모 (turtlesim/Gazebo)
+
+실제 빨간 공 없이도 손 위치만으로 turtlesim/Gazebo 추적을 시연할 수 있도록
+`gesture_node`가 손 랜드마크 중심 좌표를 `TrackedObject`로 발행하는 대체
+경로를 추가했다 (`docs/todo.md` 참고). `controller_node`/
+`tracking_controller.py`(카메라가 로봇 자신에게 달려 있다는 전제)는
+그대로 두고, 로봇의 실제 pose와 목표 좌표를 직접 비교하는
+`core/pursuit_controller.py` 기반 별도 노드(`turtle_pursuit_node`,
+`gazebo_pursuit_node`)로 구현했다. `controller_node`와 동시에 실행하면
+안 된다.
+
 ## 미결정 사항
 
-- 이동 제어 파라미터의 수치 초깃값
+- 이동 제어 파라미터의 수치 초깃값 (게인은 1차 조정, 나머지는 미확정)
 - Gazebo의 최종 발표 포함 여부
 
 미결정 사항은 코드에 임의로 확정하지 않고 TODO로 남긴 뒤 팀 합의 후 반영한다.

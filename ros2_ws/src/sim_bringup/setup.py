@@ -19,6 +19,14 @@ setup(
             os.path.join("share", PACKAGE_NAME, "params"),
             glob(os.path.join("params", "*.yaml")),
         ),
+        (
+            os.path.join("share", PACKAGE_NAME, "config"),
+            glob(os.path.join("config", "*.config")),
+        ),
+        (
+            os.path.join("share", PACKAGE_NAME, "models"),
+            glob(os.path.join("models", "*.sdf")),
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,

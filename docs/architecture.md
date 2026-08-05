@@ -17,9 +17,10 @@ sim_bringup (turtlesim 실행·통합 launch)
 ## 데이터 흐름
 
 ```text
-camera_node ── /camera/image_raw ─┬─ gesture_node
-                                 │       └─ /gesture/command ─┐
-                                 └─ object_tracking_node      │
+camera_node ── /camera/image_raw ─┬─ gesture_node ── /camera/image_annotated ─┐
+                                 │       └─ /gesture/command ─┐               │
+                                 └─ object_tracking_node      │               ├─→ main_ui (CAMERA 패널)
+                                      ├─ /camera/image_annotated ─────────────┘
                                       └─ /tracking/object ────┤
                                                               ▼
                                                        controller_node
@@ -28,6 +29,11 @@ camera_node ── /camera/image_raw ─┬─ gesture_node
                                                               ▼
                                                          turtlesim
 ```
+
+`gesture_node`와 `object_tracking_node`는 각자 원본 프레임에 손 랜드마크/객체
+바운딩 박스를 그려 동일한 `camera/image_annotated` 토픽에 독립적으로 발행한다.
+`main_ui`는 두 발행자 중 먼저 도착한 프레임을 그대로 표시하므로, 한 프레임에
+손과 객체 표시가 항상 동시에 나타나지는 않는다.
 
 거북이에 전방 카메라가 장착된 것으로 가정한다. 제어 노드는 다음 입력 관계로
 turtlesim의 속도를 계산한다.
@@ -63,3 +69,9 @@ nodes ──→ core
 발행해 turtlesim 기준으로는 별도 구현이 필요 없을 수 있음, 팀 논의 필요).
 `camera_node`, `gesture_node`, `object_tracking_node`, `controller_node`는 구현되어
 있으며, 실제 웹캠·turtlesim·Gazebo 환경에서의 전체 통합 검증이 필요하다.
+
+`docs/SOT.md`의 "손 위치 추적 데모" 참고: 실제 공 없이 시연할 때는
+`controller_node` 대신 `core/pursuit_controller.py` 기반의
+`turtle_pursuit_node`/`gazebo_pursuit_node`를 사용한다(로봇의 실제 pose와
+목표 좌표를 직접 비교하는 방식으로, 화면 오차 기반인 `tracking_controller.py`와
+전제가 다르다).

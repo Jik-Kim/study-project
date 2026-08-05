@@ -16,9 +16,11 @@ from launch import LaunchDescription
 from launch.actions import (
     AppendEnvironmentVariable,
     DeclareLaunchArgument,
+    GroupAction,
     IncludeLaunchDescription,
     SetEnvironmentVariable,
 )
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -33,14 +35,21 @@ def generate_launch_description():
     turtlebot3_model = LaunchConfiguration("turtlebot3_model", default="burger")
     x_pose = LaunchConfiguration("x_pose", default="0.0")
     y_pose = LaunchConfiguration("y_pose", default="0.0")
+    # 손 추적 데모 등에서는 controller_node가 포함된 표준 5노드 파이프라인
+    # 대신 별도 노드 조합(gesture_node + gazebo_pursuit_node)을 직접
+    # 띄우고 싶을 때가 있어, 이 launch에서 파이프라인 포함 여부를 끌 수 있게 한다.
+    launch_pipeline = LaunchConfiguration("launch_pipeline", default="true")
 
     world = os.path.join(tb3_gazebo_share, "worlds", "empty_world.world")
-    model_sdf = os.path.join(
-        tb3_gazebo_share, "models", "turtlebot3_burger", "model.sdf"
-    )
+    # 화면에서 잘 보이도록 시각적 크기만 2배로 키운 커스텀 모델을 사용한다
+    # (충돌/관성 등 물리 속성은 원본과 동일 - 순수 시각적 확대).
+    model_sdf = os.path.join(sim_bringup_share, "models", "turtlebot3_burger_big.sdf")
     bridge_params = os.path.join(
         sim_bringup_share, "params", "turtlebot3_burger_twist_bridge.yaml"
     )
+    # SDF <gui><camera> pose는 이 gz-sim 버전에서 무시되어("can't be converted
+    # yet" 경고) 별도 GUI 플러그인 설정 파일로 탑뷰 카메라를 지정한다.
+    gui_config = os.path.join(sim_bringup_share, "config", "topdown_gui.config")
 
     # Gazebo는 TURTLEBOT3_MODEL 환경변수로 로봇 모델(urdf/모델 폴더명)을 찾는다.
     set_turtlebot3_model = SetEnvironmentVariable("TURTLEBOT3_MODEL", turtlebot3_model)
@@ -61,7 +70,9 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(ros_gz_sim_share, "launch", "gz_sim.launch.py")
         ),
-        launch_arguments={"gz_args": "-g -v2 "}.items(),
+        launch_arguments={
+            "gz_args": ["-g -v2 --gui-config ", gui_config]
+        }.items(),
     )
 
     robot_state_publisher_cmd = IncludeLaunchDescription(
@@ -88,43 +99,24 @@ def generate_launch_description():
         output="screen",
     )
 
-    # --- gesture_robot 파이프라인 (카메라 -> 제스처/추적 -> 제어 -> Gazebo) ---
-    camera_node_cmd = Node(
-        package="gesture_robot",
-        executable="camera_node",
-        name="camera_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
+    # --- gesture_robot 5개 노드 파이프라인 ---
+    # gesture_robot.launch.py를 include해 재사용한다 (params.yaml 연동 포함,
+    # turtlesim_bringup.launch.py와의 노드 정의 중복 방지).
+    # cmd_vel_topic을 "cmd_vel"로 override해 Gazebo 브릿지가 구독하는 토픽에 맞춘다.
+    gesture_robot_launch = os.path.join(
+        get_package_share_directory("gesture_robot"), "launch", "gesture_robot.launch.py"
     )
-    gesture_node_cmd = Node(
-        package="gesture_robot",
-        executable="gesture_node",
-        name="gesture_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-    )
-    object_tracking_node_cmd = Node(
-        package="gesture_robot",
-        executable="object_tracking_node",
-        name="object_tracking_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-    )
-    controller_node_cmd = Node(
-        package="gesture_robot",
-        executable="controller_node",
-        name="controller_node",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
-        # turtlesim 전용 토픽명을 Gazebo 브릿지가 구독하는 cmd_vel로 remap한다.
-        remappings=[("turtle1/cmd_vel", "cmd_vel")],
-    )
-    main_ui_cmd = Node(
-        package="gesture_robot",
-        executable="main_ui",
-        name="main_ui",
-        output="screen",
-        parameters=[{"use_sim_time": use_sim_time}],
+    gesture_robot_pipeline = GroupAction(
+        condition=IfCondition(launch_pipeline),
+        actions=[
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(gesture_robot_launch),
+                launch_arguments={
+                    "cmd_vel_topic": "cmd_vel",
+                    "use_sim_time": use_sim_time,
+                }.items(),
+            ),
+        ],
     )
 
     return LaunchDescription([
@@ -132,6 +124,7 @@ def generate_launch_description():
         DeclareLaunchArgument("turtlebot3_model", default_value="burger"),
         DeclareLaunchArgument("x_pose", default_value="0.0"),
         DeclareLaunchArgument("y_pose", default_value="0.0"),
+        DeclareLaunchArgument("launch_pipeline", default_value="true"),
         set_turtlebot3_model,
         set_env_vars_resources,
         gzserver_cmd,
@@ -139,9 +132,5 @@ def generate_launch_description():
         robot_state_publisher_cmd,
         spawn_turtlebot_cmd,
         bridge_cmd,
-        camera_node_cmd,
-        gesture_node_cmd,
-        object_tracking_node_cmd,
-        controller_node_cmd,
-        main_ui_cmd,
+        gesture_robot_pipeline,
     ])
