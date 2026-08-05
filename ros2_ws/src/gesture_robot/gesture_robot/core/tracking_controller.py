@@ -15,8 +15,8 @@ class TrackingController:
 
     def __init__(
         self,
-        linear_gain: float = 0.001,
-        angular_gain: float = 0.001,
+        linear_gain: float = 0.004,
+        angular_gain: float = 0.004,
         target_area: float = 2000.0,
         area_deadband: float = 100.0,
         angular_deadband: float = 10.0,
