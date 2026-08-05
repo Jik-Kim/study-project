@@ -1,5 +1,6 @@
 """Tkinter 기반 메인 UI 영역."""
 
+import time
 from collections import deque
 from typing import Optional
 
@@ -43,6 +44,7 @@ class MainUI:
         self._sim_photo: Optional[ImageTk.PhotoImage] = None
         self._linear_history: deque[float] = deque(maxlen=self._VEL_MAXLEN)
         self._angular_history: deque[float] = deque(maxlen=self._VEL_MAXLEN)
+        self._topic_last_seen: dict[str, float] = {}
 
         self._build_ui()
         if use_mock:
@@ -82,21 +84,21 @@ class MainUI:
 
         self._svars: dict[str, tk.StringVar] = {}
         fields = [
-            ("Tracking", "tracking"),
-            ("Gesture", "gesture"),
-            ("Confidence", "confidence"),
-            ("Error X", "error_x"),
-            ("Error Y", "error_y"),
-            ("Area", "area"),
-            ("FPS", "fps"),
+            ("Tracking", "tracking", 8),
+            ("Gesture", "gesture", 8),
+            ("Confidence", "confidence", 6),
+            ("Error X", "error_x", 8),
+            ("Error Y", "error_y", 8),
+            ("Area", "area", 6),
+            ("FPS", "fps", 6),
         ]
 
-        for col, (label, key) in enumerate(fields):
+        for col, (label, key, width) in enumerate(fields):
             self._svars[key] = tk.StringVar(value="--")
             ttk.Label(frame, text=label).grid(
                 row=0, column=col * 2, sticky="w", padx=(5, 2),
             )
-            ttk.Label(frame, textvariable=self._svars[key]).grid(
+            ttk.Label(frame, textvariable=self._svars[key], width=width, anchor="w").grid(
                 row=0, column=col * 2 + 1, sticky="w", padx=(0, 10),
             )
 
@@ -194,9 +196,12 @@ class MainUI:
         self._svars["fps"].set(f"{fps:.1f}")
 
     def update_topic_activity(self, active_topic: str) -> None:
-        """직전에 메시지가 발행된 토픽의 표시등을 강조한다."""
+        """토픽의 수신 타임스탬프를 기록하고, 최근 1초 내 수신된 모든 활성 토픽의 표시등을 켠다."""
+        now = time.time()
+        self._topic_last_seen[active_topic] = now
         for topic, dot in zip(self._TOPICS, self._flow_dots):
-            color = "#3a7" if topic == active_topic else "#ccc"
+            last_seen = self._topic_last_seen.get(topic, 0.0)
+            color = "#3a7" if (now - last_seen < 1.0) else "#ccc"
             self._flow_canvas.itemconfig(dot, fill=color)
 
     def update_velocity(self, linear_x: float, angular_z: float) -> None:
