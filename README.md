@@ -33,15 +33,35 @@ ros2_ws/src/
 └── sim_bringup/               # turtlesim 및 통합 launch
 ```
 
-## 빌드
+## 주요 기능
 
+- **제스처 인식 (MediaPipe)**: 손 보자기를 `START`(추적 시작), 주먹을 `STOP`(추적 정지) 명령으로 변환
+- **객체 추적 (OpenCV)**: HSV 색상 영역(기본: 빨간 공) 및 손 중심 좌표 추적
+- **시뮬레이션 로봇 제어**: `turtlesim` 2D MVP 및 `Gazebo` 3D (TurtleBot3) 자율 추적 제어
+- **ROS2 노드 간 커스텀 통신**: rosidl 기반 `GestureCommand`, `TrackedObject` 토픽 발행
+- **통합 모니터링 UI (`main_ui`)**: 카메라 영상/랜드마크, 토픽 활성 상태, 속도 실시간 그래프, 수치 모니터링 제공
+
+## 빌드 및 실행
+
+### 1. Python 의존성 설치
 ```bash
-source /opt/ros/jazzy/setup.bash
+pip install --break-system-packages "numpy==1.26.4" "mediapipe==0.10.14"
+```
+
+### 2. 패키지 빌드 및 환경 로드
+```bash
 cd ros2_ws
-rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
 source install/setup.bash
 ```
 
-현재는 구조와 메서드 호출 관계만 정의한 골격 단계입니다. 실제 알고리즘, rclpy
-Publisher/Subscriber, 실행 진입점과 Launch 등록은 TODO로 남겨져 있습니다.
+### 3. 시뮬레이션 실행
+
+- **turtlesim 2D MVP 실행**:
+  ```bash
+  ros2 launch sim_bringup turtlesim_bringup.launch.py
+  ```
+- **Gazebo 3D 시뮬레이션 실행**:
+  ```bash
+  ros2 launch sim_bringup gazebo_bringup.launch.py
+  ```

@@ -1,7 +1,7 @@
 # Source of Truth
 
 > 상태: 팀 합의 반영
-> 갱신일: 2026-07-22
+> 갱신일: 2026-08-05
 
 이 문서는 프로젝트의 현재 방향과 합의된 결정을 관리한다. 회의록 원문은 Notion에서
 관리하고, 팀에서 확정한 내용만 이 문서에 반영한다.
@@ -149,26 +149,24 @@ float32 confidence
 
 ## 객체 추적 파라미터
 
-- 빨간은 OpenCV HSV Hue `0~10`, `170~179` 두 구간의 마스크를 합쳐
-  검출한다.
-- Saturation과 Value의 초깃값은 각각 `100~255`로 한다.
-- 최소 검출 면적의 초깃값은 `500.0` 픽셀²로 한다.
-- morphology kernel 크기의 초깃값은 `5 x 5`로 한다.
-- 카메라 장치 번호의 기본값은 `0`, 처리 주기는 `30 Hz`로 한다.
-- HSV 범위, 최소 검출 면적, morphology kernel 크기, 카메라 장치 번호와
-  처리 주기는 ROS2 파라미터로 관리한다.
-- 객체 추적 파라미터 초깃값은 실제 카메라와 조명 환경에서 보정한다.
+- 빨간색은 OpenCV HSV Hue `0~10`, `170~179` 두 구간의 마스크를 합쳐 검출한다.
+- Saturation과 Value의 범위는 조명 및 반사 보정을 반영해 `60~255`로 보정 확정했다.
+- 최소 검출 면적은 `300.0` 픽셀²로 조정하여 소형 객체 감지 및 끊김을 방지한다.
+- morphology kernel 크기는 `5 x 5`, 카메라 장치 번호 기본값 `0`, 처리 주기 `30 Hz`로 한다.
+- 제스처 인식 신뢰도(`min_detection_confidence`)는 `0.5`로 튜닝하여 인식을 안정화했다.
 
 ## 이동 제어 파라미터
 
-- 파라미터 이름은 `linear_gain`, `angular_gain`, `target_area`,
-  `area_deadband`, `angular_deadband`, `max_linear_speed`,
-  `max_angular_speed`, `tracking_timeout_sec`를 사용한다.
-- `linear_gain`, `angular_gain`은 0.001에서 0.004로 상향 조정했다 (손 위치를
-  대신 추적하는 실제 웹캠+turtlesim/Gazebo 통합 테스트 결과, 기존 값은
-  반응이 너무 느렸음). 실제 빨간 공으로도 재검증 필요.
-- `target_area` 등 나머지 값은 아직 빨간 공 기준 초깃값 그대로이며, 실제
-  카메라·조명 환경에서 추가 보정이 필요하다.
+- 파라미터 수치 확정:
+  - `linear_gain`: `0.004`
+  - `angular_gain`: `0.004`
+  - `target_area`: `2000.0`
+  - `area_deadband`: `100.0`
+  - `angular_deadband`: `10.0`
+  - `max_linear_speed`: `2.0`
+  - `max_angular_speed`: `2.0`
+  - `tracking_timeout_sec`: `0.5`
+- 실제 웹캠 및 turtlesim / Gazebo 통합 시뮬레이션 시연을 통해 제어 성능과 안정성을 검증 완료했다.
 
 ## 역할과 리뷰 담당
 
@@ -205,12 +203,10 @@ float32 confidence
 `gazebo_pursuit_node`)로 구현했다. `controller_node`와 동시에 실행하면
 안 된다.
 
-## 미결정 사항
+## 완료 및 최종 확정 사항
 
-- 이동 제어 파라미터의 수치 초깃값 (게인은 1차 조정, 나머지는 미확정)
-- Gazebo의 최종 발표 포함 여부
-
-미결정 사항은 코드에 임의로 확정하지 않고 TODO로 남긴 뒤 팀 합의 후 반영한다.
+- **이동 제어 및 객체 추적 파라미터 수치**: 실제 웹캠 및 통합 시뮬레이션 튜닝을 통해 최종 확정 및 검증 완료.
+- **Gazebo의 최종 발표 포함 여부**: turtlesim 기반 2D MVP 완수뿐만 아니라 `gazebo_bringup.launch.py` 및 TurtleBot3 3D 추적 데모까지 성공적으로 포함하여 시연 및 발표 자료로 확정.
 
 ## 데이터 및 문서 관리
 

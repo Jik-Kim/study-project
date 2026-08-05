@@ -76,14 +76,12 @@ class MainUINode(Node):
         self._gesture_confidence = msg.confidence
         self._state_machine.update(msg.command)
         self._ui.update_topic_activity("gesture/command")
-        self._publish_status()
 
     def _on_tracking_result(self, msg: TrackedObject) -> None:
         self._tracking_error_x = msg.error_x if msg.detected else 0.0
         self._tracking_error_y = msg.error_y if msg.detected else 0.0
         self._tracking_area = msg.area if msg.detected else 0.0
         self._ui.update_topic_activity("tracking/object")
-        self._publish_status()
 
     def _on_velocity_command(self, msg: Twist) -> None:
         self._ui.update_velocity(msg.linear.x, msg.angular.z)
